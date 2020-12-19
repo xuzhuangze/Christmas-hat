@@ -1,0 +1,27 @@
+<view class="container">
+
+
+  <view class="headpicwrap">
+    <canvas canvas-id="canvas"></canvas>
+
+  </view>
+  <button open-type="getUserInfo" bindgetuserinfo="_getUserInfo" disabled="{{hasUploadHeadpic ? true : false}}"
+    class="getPic">
+    {{hasUploadHeadpic ? '头像已上传':'点我上传头像'}}
+  </button>
+
+  <button class="downloadPic">
+    保存到相册
+  </button>
+  <view>{{uuuurl}}</view>
+  <canvas id="ctx" style="border:1px solid #cccccc;margin:0 auto;" width="100" height="100"></canvas>
+
+
+  <!-- 圣诞帽列表 -->
+  <view class="selectBar">
+    <block wx:for="{{hats}}" wx:key="*this">
+      <image src="{{item.url}}"> </image>
+    </block>
+  </view>
+
+</view>
