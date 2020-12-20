@@ -35,10 +35,25 @@ view.headpicwrap image {
   height: 200rpx;
   box-sizing: border-box;
   border: 1px dashed #ffffff;
-  line-height:200rpx;
+  border-left: none;
+  border-right: none;
+  line-height: 200rpx;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-.selectBar image {
+.selectBar view {
+  width: 900px;
+  height: 200rpx;
+}
+
+.selectBar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  color: transparent;
+}
+
+.selectBar view image {
   width: 200rpx;
   height: 200rpx;
 }

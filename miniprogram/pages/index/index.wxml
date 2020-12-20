@@ -3,14 +3,14 @@
 
   <view class="headpicwrap">
     <canvas canvas-id="canvas"></canvas>
-
   </view>
+  <!-- <image src="{{headPic}}"></image> -->
   <button open-type="getUserInfo" bindgetuserinfo="_getUserInfo" disabled="{{hasUploadHeadpic ? true : false}}"
     class="getPic">
     {{hasUploadHeadpic ? '头像已上传':'点我上传头像'}}
   </button>
 
-  <button class="downloadPic">
+  <button class="downloadPic" bindtap="_saveResult">
     保存到相册
   </button>
   <view>{{uuuurl}}</view>
@@ -19,9 +19,12 @@
 
   <!-- 圣诞帽列表 -->
   <view class="selectBar">
-    <block wx:for="{{hats}}" wx:key="*this">
-      <image src="{{item.url}}"> </image>
-    </block>
+    <view style="width:{{hats.length*200}}rpx">
+      <block wx:for="{{hats}}" wx:key="*this">
+        <image src="{{item.url}}" data-path="{{item.url}}" bindtap="_drawHat"> </image>
+      </block>
+    </view>
+
   </view>
 
 </view>
