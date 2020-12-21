@@ -24,7 +24,6 @@
         <image src="{{item.url}}" data-path="{{item.url}}" bindtap="_drawHat"> </image>
       </block>
     </view>
-
   </view>
 
 </view>

@@ -16,6 +16,7 @@ view.headpicwrap {
   justify-content: center;
 }
 
+
 canvas {
   width: 412rpx;
   height: 412rpx;
