@@ -12,12 +12,13 @@ Page({
       b: 1,//缩放的倍率
       rotate: 0//旋转的角度
     },
-    uuuurl: '',
+    downloadPath: '',
     headPic: '',
     hasUploadHeadpic: 0,
     canvasContext: '',
     hats: [],
-    canDrawHat: false
+    canDrawHat: false,
+    headtemppath: '',
   },
 
   onLoad: function (options) {
@@ -35,7 +36,7 @@ Page({
   },
 
   // 画布
-  async _useCanvas(url, x = 0, y = 0, w = 412, h = 412) {
+  async _useCanvas(url, x = 0, y = 0, w = 412, h = 412, isclear) {
     this.setData({ canvasContext: wx.createCanvasContext('canvas') });
     let dw = 375;
     await wx.getSystemInfo({
@@ -45,12 +46,24 @@ Page({
     })
     // 根据屏幕尺寸计算图片的px值
     let rpx = dw / 750;
+    let headw = 412 * rpx;
+    let headh = 412 * rpx;
     let pw = w * rpx;
     let ph = h * rpx;
+
+
+    if (isclear) {//是否需要清空canvas（这里直接再画了个把原来的内容覆盖掉）
+      this.data.canvasContext.beginPath();
+      this.data.canvasContext.drawImage(this.data.headtemppath, 0, 0, headw, headh)
+      this.data.canvasContext.draw();
+    }
+
     this.data.canvasContext.beginPath();
     this.data.canvasContext.drawImage(url, x, y, pw, ph)
     this.data.canvasContext.draw(true);
   },
+
+
 
   // 保存结果
   _saveResult() {
@@ -67,9 +80,11 @@ Page({
           fileType: 'jpg',
           quality: 1,
           success: (res) => {
-            this.uuuurl = res.tempFilePath;
-            console.log(res.tempFilePath);
             if (res.tempFilePath) {
+              this.setData({
+                downloadPath: res.tempFilePath
+              });
+              console.log(res.tempFilePath);
               wx.showToast({
                 title: '图片下载到' + res.tempFilePath,
                 icon: 'none'
@@ -86,7 +101,6 @@ Page({
 
   // 获取头像并调用canvas函数将头像画在画布中
   _getUserInfo(e) {
-    // console.log(e.detail.userInfo, 111);
     if (e.detail.userInfo) {
       this.setData({
         userInfo: e.detail.userInfo,
@@ -99,7 +113,7 @@ Page({
         success: (res) => {
           console.log(res);
           this._useCanvas(res.path);//参数为头像的路径
-          this.setData({ canDrawHat: true })
+          this.setData({ canDrawHat: true, headtemppath: res.path })
         }
       })
     } else {
@@ -119,10 +133,13 @@ Page({
       })
       return
     }
+    // this.data.canvasContext.fillStyle = 'transparent';
+
+
     wx.getImageInfo({
       src: e.currentTarget.dataset.path,
       success: (res) => {
-        this._useCanvas(res.path, 60, -8, 200, 200);//参数为头像的路径
+        this._useCanvas(res.path, 60, 0, 200, 200, 1);//参数为头像的路径
       }
     })
   },
