@@ -85,3 +85,26 @@ view.headpicwrap image {
 .hasUploadHeadpic {
   background-color: aqua;
 }
+
+.changesize {
+  height: 30px;
+  color: #ccc;
+}
+
+.changesize text {
+  float: left;
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+  font-weight: 900;
+  border: 3px solid #ffffff;
+  line-height: 25px;
+  border-radius: 50%;
+  text-align: center;
+  margin-left: 100px; 
+  margin-bottom: 20px;
+}
+
+.changesize text:nth-of-type(1) {
+  margin-left: 100px;
+}

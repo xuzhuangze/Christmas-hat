@@ -19,8 +19,16 @@ Page({
     hats: [],
     canDrawHat: false,
     headtemppath: '',
+    hatInfo: {
+      x: 0,//px
+      y: 0,//px
+      w: 0,//rpx
+      h: 0,//rpx
+      rotate: 0,//deg
+    },
+    currentHat: '',
+    canMove: false,
   },
-
   onLoad: function (options) {
     this.setData({ canvasContext: wx.createCanvasContext('canvas') });
     this._getHats();
@@ -29,15 +37,41 @@ Page({
   // 获取帽子列表
   async _getHats() {
     let res = await wx.cloud.database().collection('hatList').where({ status: 1 }).get();
-    // console.log(res);
     if (res.data && res.data.length != 0) {
       this.setData({ hats: res.data });
     }
   },
 
+  _touchCanvas(e) {
+    if (e.touches[0].x > this.data.hatInfo.x && e.touches[0].y > this.data.hatInfo.y
+      && e.touches[0].x < this.data.hatInfo.x + this.data.hatInfo.w &&
+      e.touches[0].y < this.data.hatInfo.y + this.data.hatInfo.h
+    ) {
+      this.setData({ canMove: true });
+    } else {
+      this.setData({ canMove: false });
+    }
+  },
+
+  _moveHat(e) {
+    if (this.data.canMove) {
+      this._useCanvas(this.data.currentHat, e.touches[0].x - this.data.hatInfo.w / 4, e.touches[0].y - this.data.hatInfo.h / 4, this.data.hatInfo.w, this.data.hatInfo.h, 1, 'move')
+    }
+  },
+
+  // 放大
+  _addSize() {
+    if(!this.data.canDrawHat)return
+    let { x, y, w, h } = this.data.hatInfo;
+    this._useCanvas(this.data.currentHat, x, y, w * 1.2, h * 1.2, 1);
+  },
+  _reduceSize() {
+    if(!this.data.canDrawHat)return
+    let { x, y, w, h } = this.data.hatInfo;
+    this._useCanvas(this.data.currentHat, x, y, w * 0.8, h * 0.8, 1);
+  },
   // 画布
-  async _useCanvas(url, x = 0, y = 0, w = 412, h = 412, isclear) {
-    this.setData({ canvasContext: wx.createCanvasContext('canvas') });
+  async _useCanvas(url, x = 0, y = 0, w = 412, h = 412, drawingHat, actionType) {
     let dw = 375;
     await wx.getSystemInfo({
       success(res) {
@@ -51,16 +85,24 @@ Page({
     let pw = w * rpx;
     let ph = h * rpx;
 
-
-    if (isclear) {//是否需要清空canvas（这里直接再画了个把原来的内容覆盖掉）
-      this.data.canvasContext.beginPath();
-      this.data.canvasContext.drawImage(this.data.headtemppath, 0, 0, headw, headh)
-      this.data.canvasContext.draw();
-    }
-
+    //每一次必须执行  用头像来覆盖原来的地方
     this.data.canvasContext.beginPath();
-    this.data.canvasContext.drawImage(url, x, y, pw, ph)
-    this.data.canvasContext.draw(true);
+    this.data.canvasContext.drawImage(this.data.headtemppath, 0, 0, headw, headh)
+    this.data.canvasContext.draw();
+
+
+
+    if (drawingHat) {//是否在画帽子
+      this.data.canvasContext.beginPath();
+      this.data.canvasContext.drawImage(url, x, y, pw, ph)//像素值
+      this.data.canvasContext.draw(true, () => {
+        if (drawingHat) {
+          // 这儿xy是像素值，w，h是rpx;
+          this.setData({ hatInfo: { x, y, w, h, rotate: this.data.hatInfo.rotate } });
+          // console.log(this.data.hatInfo);
+        }
+      });
+    }
   },
 
 
@@ -84,10 +126,11 @@ Page({
               this.setData({
                 downloadPath: res.tempFilePath
               });
-              console.log(res.tempFilePath);
-              wx.showToast({
-                title: '图片下载到' + res.tempFilePath,
-                icon: 'none'
+              wx.saveImageToPhotosAlbum({
+                filePath: res.tempFilePath,
+                success() {
+                  wx.showToast({ title: '保存成功' })
+                }
               })
             }
           },
@@ -107,11 +150,11 @@ Page({
         headPic: e.detail.userInfo.avatarUrl,
         hasUploadHeadpic: 1
       });
-      console.log(this.data.headPic);
+      // console.log(this.data.headPic);
       wx.getImageInfo({
         src: this.data.headPic,
         success: (res) => {
-          console.log(res);
+          // console.log(res);
           this._useCanvas(res.path);//参数为头像的路径
           this.setData({ canDrawHat: true, headtemppath: res.path })
         }
@@ -134,12 +177,11 @@ Page({
       return
     }
     // this.data.canvasContext.fillStyle = 'transparent';
-
-
     wx.getImageInfo({
       src: e.currentTarget.dataset.path,
       success: (res) => {
-        this._useCanvas(res.path, 60, 0, 200, 200, 1);//参数为头像的路径
+        this.setData({ currentHat: res.path })
+        this._useCanvas(res.path, 60, 0, 200, 200, 1);//参数为头像信息,单位为rpx
       }
     })
   },
