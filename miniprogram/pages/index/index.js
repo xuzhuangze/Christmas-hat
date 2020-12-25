@@ -61,12 +61,12 @@ Page({
 
   // 放大
   _addSize() {
-    if(!this.data.canDrawHat)return
+    if (!this.data.canDrawHat) return
     let { x, y, w, h } = this.data.hatInfo;
     this._useCanvas(this.data.currentHat, x, y, w * 1.2, h * 1.2, 1);
   },
   _reduceSize() {
-    if(!this.data.canDrawHat)return
+    if (!this.data.canDrawHat) return
     let { x, y, w, h } = this.data.hatInfo;
     this._useCanvas(this.data.currentHat, x, y, w * 0.8, h * 0.8, 1);
   },
@@ -84,11 +84,15 @@ Page({
     let headh = 412 * rpx;
     let pw = w * rpx;
     let ph = h * rpx;
-
+    console.log(this.data.headtemppath);
     //每一次必须执行  用头像来覆盖原来的地方
     this.data.canvasContext.beginPath();
     this.data.canvasContext.drawImage(this.data.headtemppath, 0, 0, headw, headh)
-    this.data.canvasContext.draw();
+    this.data.canvasContext.draw(true, () => {
+      this.setData({
+        hasUploadHeadpic: 1
+      })
+    });
 
 
 
@@ -144,19 +148,19 @@ Page({
 
   // 获取头像并调用canvas函数将头像画在画布中
   _getUserInfo(e) {
+    console.log(e);
     if (e.detail.userInfo) {
       this.setData({
         userInfo: e.detail.userInfo,
         headPic: e.detail.userInfo.avatarUrl,
-        hasUploadHeadpic: 1
       });
-      // console.log(this.data.headPic);
-      wx.getImageInfo({
-        src: this.data.headPic,
-        success: (res) => {
-          // console.log(res);
-          this._useCanvas(res.path);//参数为头像的路径
-          this.setData({ canDrawHat: true, headtemppath: res.path })
+      wx.downloadFile({
+        url: e.detail.userInfo.avatarUrl,
+        success: (result) => {
+          // console.log(result.tempFilePath);
+          this.setData({ canDrawHat: true, headtemppath: result.tempFilePath })
+          this._useCanvas();
+          
         }
       })
     } else {
